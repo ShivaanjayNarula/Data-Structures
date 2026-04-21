@@ -56,6 +56,20 @@ void deleteNode(struct Node **head, int key)
     free(temp);
 }
 
+void reverseList(struct Node **head) {
+    struct Node *prev = NULL;
+    struct Node *current = *head;
+    struct Node *next = NULL;
+    while(current != NULL)
+    {
+        next = current->next;
+        current->next = prev;
+        prev = current;
+        current = next;
+    }
+    *head = prev;
+}
+
 void displayList(struct Node* node)
 {
     while(node != NULL)
@@ -92,6 +106,11 @@ int main()
     deleteNode(&myNode, 10);
 
     printf("After deleting 10: ");
+    displayList(myNode);
+
+    reverseList(&myNode);
+
+    printf("After Reversing List: ");
     displayList(myNode);
 
     freeList(&myNode);
