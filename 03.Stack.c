@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
 
 struct Stack
 {
@@ -18,6 +17,23 @@ struct Stack* createStack(unsigned capacity)
     return stack;
 }
 
+void resizeStack(struct Stack* stack)
+{
+    unsigned oldCapacity = stack->capacity;
+    stack->capacity *= 2;
+    
+    int* temp = (int*)realloc(stack->array, stack->capacity * sizeof(int));
+    
+    if(temp == NULL)
+    {
+        printf("Memory allocation failed!\n");
+        return;
+    }
+    
+    stack->array = temp;
+    printf("Queue resized to capacity %u\n", stack->capacity);
+}
+
 int isFull(struct Stack* stack)
 {
     return stack->top == stack->capacity - 1;
@@ -32,20 +48,20 @@ void push(struct Stack* stack, int item)
 {
     if(isFull(stack))
     {
-        return;
+        resizeStack(stack);
     }
     stack->array[++stack->top] = item;
     printf("%d pushed to stack\n", item);
 }
 
-void pop(struct Stack* stack)
+int pop(struct Stack* stack)
 {
     if(isEmpty(stack))
     {
-        return;
+        printf("Stack Underflow\n");
+        return -1;
     }
-    int item = stack->array[stack->top--];
-    printf("%d popped from stack\n", item);
+    return stack->array[stack->top--];
 }
 
 void peek(struct Stack* stack)
@@ -54,21 +70,27 @@ void peek(struct Stack* stack)
     {
         return;
     }
-    int item = stack->array[stack->top];
-    printf("Top element is %d\n", item);
-    
+    printf("Top element is %d\n", stack->array[stack->top]);
 }
 
-int main()
-{
-    struct Stack* stack = createStack(100);
+int main() {
+    struct Stack* stack = createStack(2);
 
     push(stack, 10);
     push(stack, 20);
     push(stack, 30);
-
-    pop(stack);
+    push(stack, 40);
+    push(stack, 50);
 
     peek(stack);
+
+    printf("%d popped from stack\n", pop(stack));
+    printf("%d popped from stack\n", pop(stack));
+
+    peek(stack);
+
+    free(stack->array);
+    free(stack);
+
     return 0;
 }
