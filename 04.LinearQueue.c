@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
 
 struct Queue
 {
@@ -15,14 +14,29 @@ struct Queue* createQueue(unsigned capacity)
     queue->capacity = capacity;
     queue->front = 0;
     queue->size = 0;
-    queue->rear = capacity - 1;
+    queue->rear = -1; 
     queue->array = (int*)malloc(queue->capacity * sizeof(int));
     return queue;
 }
 
+void resizeQueue(struct Queue* queue)
+{
+    unsigned oldCapacity = queue->capacity;
+    queue->capacity *= 2;
+
+    int* temp = (int*)realloc(queue->array, queue->capacity * sizeof(int));
+    if(temp == NULL)
+    {
+        printf("Memory allocation failed!\n");
+        return;
+    }
+    queue->array = temp;
+    printf("Queue resized to capacity %u\n", queue->capacity);
+}
+
 int isFull(struct Queue* queue)
 {
-    return (queue->size == queue->capacity);
+    return (queue->rear == (int)queue->capacity - 1);
 }
 
 int isEmpty(struct Queue* queue)
@@ -32,40 +46,46 @@ int isEmpty(struct Queue* queue)
 
 void enqueue(struct Queue* queue, int item)
 {
-    if(isFull(queue))
+    if (isFull(queue))
     {
-        return;
+        resizeQueue(queue);
     }
-    queue->rear = (queue->rear + 1) % queue->capacity;
+    queue->rear++; 
     queue->array[queue->rear] = item;
-    queue->size = queue->size + 1;
+    queue->size++;
     printf("%d enqueued to queue\n", item);
 }
 
 void dequeue(struct Queue* queue)
 {
-    if(isEmpty(queue))
+    if (isEmpty(queue))
     {
+        printf("Queue is empty\n");
         return;
     }
     int item = queue->array[queue->front];
-    queue->front = (queue->front + 1) % queue->capacity;
-    queue->size = queue->size - 1;
+    queue->front++;
+    queue->size--;
     printf("%d dequeued from queue\n", item);
 }
 
 int main()
 {
-    struct Queue* queue = createQueue(1000);
+    struct Queue* queue = createQueue(2);
 
     enqueue(queue, 10);
     enqueue(queue, 20);
-    enqueue(queue, 30);
+    
+    enqueue(queue, 30); 
+    enqueue(queue, 40);
 
     dequeue(queue);
     
-    printf("Front item is %d\n", queue->array[queue->front]);
-    printf("Rear item is %d\n", queue->array[queue->rear]);
+    printf("Front item index is %d (Value: %d)\n", queue->front, queue->array[queue->front]);
+    printf("Rear item index is %d (Value: %d)\n", queue->rear, queue->array[queue->rear]);
+    printf("Current size: %d, Capacity: %u\n", queue->size, queue->capacity);
 
+    free(queue->array);
+    free(queue);
     return 0;
 }
